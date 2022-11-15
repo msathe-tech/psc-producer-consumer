@@ -212,3 +212,57 @@ SSH to Consumer - Access the static IP from the Forwarding rule
 ```
 curl -v 10.0.60.100 
 ```
+
+## Clean up Producer 
+```
+gcloud compute routers nats delete cloudnatprod --router=crnatprod --region=us-west2 --quiet
+
+gcloud compute routers delete crnatprod --region=us-west2 --quiet
+
+gcloud compute instances delete www-01 --zone=us-west2-a --quiet
+
+gcloud compute instances delete www-02 --zone=us-west2-a --quiet
+
+gcloud compute service-attachments delete vpc-demo-psc-west2-tcp --region=us-west2 --quiet
+
+gcloud compute forwarding-rules delete vpc-demo-www-ilb-tcp --region=us-west2 --quiet
+
+gcloud compute backend-services delete vpc-demo-www-be-tcp --region=us-west2 --quiet
+
+gcloud compute instance-groups unmanaged delete vpc-demo-ig-www --zone=us-west2-a --quiet
+
+gcloud compute health-checks delete hc-http-80 --quiet
+
+gcloud compute firewall-rules delete vpc-demo-allowpsc-tcp --quiet
+
+gcloud compute firewall-rules delete vpc-demo-health-checks --quiet
+
+gcloud compute firewall-rules delete psclab-iap-prod --quiet
+
+gcloud compute networks subnets delete vpc-demo-us-west2 --region=us-west2 --quiet
+
+gcloud compute networks subnets delete vpc-demo-us-west2-psc-tcp --region=us-west2 --quiet
+
+gcloud compute networks delete vpc-demo-producer --quiet
+```
+
+## Clean up Consumer
+```
+gcloud compute routers nats delete cloudnatconsumer --router=crnatconsumer --region=us-west2 --quiet
+
+gcloud compute routers delete crnatconsumer --region=us-west2 --quiet
+
+gcloud compute instances delete test-instance-1 --zone=us-west2-a --quiet
+
+gcloud compute forwarding-rules delete vpc-consumer-psc-fr-tcp --region=us-west2 --quiet
+
+gcloud compute addresses delete vpc-consumer-psc-tcp --region=us-west2 --quiet
+
+gcloud compute firewall-rules delete psclab-iap-consumer --quiet
+
+gcloud compute networks subnets delete consumer-subnet --region=us-west2 --quiet
+
+gcloud compute firewall-rules delete vpc-consumer-psc --quiet
+
+gcloud compute networks delete vpc-demo-consumer --quiet
+```
