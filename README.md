@@ -189,3 +189,26 @@ TCP Service Attachment
 ```
 gcloud compute forwarding-rules create vpc-consumer-psc-fr-tcp --region=us-west2 --network=vpc-demo-consumer --address=vpc-consumer-psc-tcp --target-service-attachment=projects/$prodproject/regions/us-west2/serviceAttachments/vpc-demo-psc-west2-tcp
 ```
+
+Validate the static IP and forwarding rule
+```
+gcloud compute forwarding-rules describe vpc-consumer-psc-fr-tcp --region us-west2
+```
+
+TCP validation - SSH to Producer www-01
+```
+sudo tcpdump -i any net 192.168.0.0/16 -n
+```
+TCP validation - SSH to Producer www-02
+```
+sudo tcpdump -i any net 192.168.0.0/16 -n
+```
+
+TCP validation - SSH to Consumer 
+```
+sudo tcpdump -i any host 10.0.60.100 -n
+```
+SSH to Consumer - Access the static IP from the Forwarding rule
+```
+curl -v 10.0.60.100 
+```
