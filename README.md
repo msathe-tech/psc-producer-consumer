@@ -151,3 +151,41 @@ gcloud compute service-attachments describe vpc-demo-psc-west2-tcp --region us-w
 gcloud compute --project=$prodproject firewall-rules create vpc-demo-allowpsc-tcp --direction=INGRESS --priority=1000 --network=vpc-demo-producer --action=ALLOW --rules=all --source-ranges=192.168.0.0/24 --enable-logging
 ```
 ## Consumer 
+Setup the env vars 
+```
+. ./setenv.sh
+```
+Setup project 
+```
+gcloud config list project
+gcloud config set project $consumerproject
+echo $consumerproject
+```
+### Setup VPC & Subnet
+```
+gcloud compute networks create vpc-demo-consumer --project=$consumerproject --subnet-mode=custom
+gcloud compute networks subnets create consumer-subnet --project=$consumerproject  --range=10.0.60.0/24 --network=vpc-demo-consumer --region=us-west2
+gcloud compute addresses create vpc-consumer-psc-tcp --region=us-west2 --subnet=consumer-subnet --addresses 10.0.60.100
+gcloud compute firewall-rules create psclab-iap-consumer --network vpc-demo-consumer --allow tcp:22 --source-ranges=35.235.240.0/20 --enable-logging
+gcloud compute --project=$consumerproject firewall-rules create vpc-consumer-psc --direction=EGRESS --priority=1000 --network=vpc-demo-consumer --action=ALLOW --rules=all --destination-ranges=10.0.60.0/24 --enable-logging
+gcloud compute routers create crnatconsumer --network vpc-demo-consumer --region us-west2
+gcloud compute routers nats create cloudnatconsumer --router=crnatconsumer --auto-allocate-nat-external-ips --nat-all-subnet-ip-ranges --enable-logging --region us-west2
+```
+
+Create a VM 
+```
+gcloud compute instances create test-instance-1 \
+    --zone=us-west2-a \
+    --image-family=debian-9 \
+    --image-project=debian-cloud \
+    --subnet=consumer-subnet --no-address \
+    --metadata=startup-script='#! /bin/bash
+apt-get update
+apt-get install iperf3 -y
+apt-get install tcpdump -y'
+```
+
+TCP Service Attachment
+```
+gcloud compute forwarding-rules create vpc-consumer-psc-fr-tcp --region=us-west2 --network=vpc-demo-consumer --address=vpc-consumer-psc-tcp --target-service-attachment=projects/$prodproject/regions/us-west2/serviceAttachments/vpc-demo-psc-west2-tcp
+```
